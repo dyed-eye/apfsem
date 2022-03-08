@@ -15,7 +15,12 @@ from PIL import Image
 import os
 import xml.etree.ElementTree as ET
 
-
+from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
+SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
 
 
 # path example: "D:\emae\python\apfsem_examples\JACS_01.jpg"
@@ -43,36 +48,46 @@ class Main(Screen):
                 self.text_input.text = os.path.dirname(os.path.abspath(__file__))
                 self.browse_button.disabled = False
                 self.browse_button.opacity = 1
+                self.messages.text = ''
 
         def gd_choose(checkbox, value):
             if value:
                 self.text_input.text = 'https://drive.google.com/'
                 self.browse_button.disabled = True
                 self.browse_button.opacity = 0
+                self.messages.text = ''
 
         def confirm_path(instance):
             if source_radio.active:
                 if os.path.isfile(self.text_input.text):
                     try:
                         img = Image.open(self.text_input.text)
-                        if (img.format == 'JPEG') or (img.format == 'JPG') or (img.format == 'PNG'):
+                        if (img.format == 'JPEG') or (img.format == 'JPG')\
+                                or (img.format == 'PNG') or (img.format == 'TIF'):
                             img.save('res/cached_image.png')
-                            with self.canvas:
-                                self.rect = Rectangle(source='res/cached_image.png')
-                                # TODO: positioning of the image
+                            self.ids.image_preview.source = 'res/cached_image.png'
+                            self.ids.image_preview.size = (img.width / img.height * self.height / 4, self.height / 4)
+                            self.ids.image_preview_label.text = 'Image preview:'
+                            self.messages.text = ''
                         else:
+                            self.messages.text = '[color=ff1111]Error: image was not recognised[/color]'
                             print('Error: image was not recognised')
                     except:
-                        print('Error: no file specified')
+                        self.messages.text = '[color=ff1111]Error: no file specified[/color]'
+                        print('Error: no image specified')
                 else:
+                    self.messages.text = '[color=ff1111]Error: no file specified[/color]'
                     print('Error: no file specified')
                     # TODO: do the errors more ... (?)
-                    # TODO: error output as a label
             elif gd_radio.active:
                 ask_google(self.text_input.text)
 
         def load(path, filename):
-            self.text_input.text = filename[0]
+            if len(filename) == 1:
+                self.text_input.text = filename[0]
+                self.messages.text = ''
+            else:
+                self.messages.text = '[color=ff1111]Error: no file specified[/color]'
             # TODO: specify extensions (?)
             dismiss_popup()
 
@@ -85,25 +100,31 @@ class Main(Screen):
                                 size_hint=(0.9, 0.9))
             self.pop_up.open()
 
-        l = self.ids.main_layout
-        fp = self.ids.file_pick_layout
+        main_l = self.ids.main_layout
+        fp_l = self.ids.file_pick_layout
+
         source_radio = CheckBox(active=True, group='source')
-        l.add_widget(source_radio)
+        main_l.add_widget(source_radio)
         source_radio.bind(active=source_choose)
-        l.add_widget(Label(text='Local File'))
+        main_l.add_widget(Label(text='Local File'))
         gd_radio = CheckBox(group='source')
-        l.add_widget(gd_radio)
+        main_l.add_widget(gd_radio)
         gd_radio.bind(active=gd_choose)
-        l.add_widget(Label(text='Google Drive link'))
+        main_l.add_widget(Label(text='Google Drive link'))
 
         self.text_input = TextInput(text=os.path.dirname(os.path.abspath(__file__)), multiline=False)
-        fp.add_widget(self.text_input)
+        fp_l.add_widget(self.text_input)
         self.browse_button = Button(text='...', on_press=pick_path, size_hint_x=None, width=40)
-        fp.add_widget(self.browse_button)
-        fp.add_widget(Button(text='confirm', on_press=confirm_path, size_hint_x=None, width=100))
+        fp_l.add_widget(self.browse_button)
+        fp_l.add_widget(Button(text='confirm', on_press=confirm_path, size_hint_x=None, width=100))
+        self.messages = Label(text='', markup=True)
+        fp_l.add_widget(self.messages)
 
 
 class MainApp(App):
+    img_prev_source = 'res/blank.png'
+    img_prev_size = (0, 0)
+
     def build(self):
         sm = ScreenManager()
         sm.add_widget(Main(name='menu'))

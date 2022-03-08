@@ -1,8 +1,15 @@
 
 <Main>:
     BoxLayout:
-        padding:70
+        padding:80
+        spacing:10
         orientation:'vertical'
+        canvas:
+            Color:
+                rgb:0,0,0,1
+            Rectangle:
+                pos:self.pos
+                size:self.size
         GridLayout:
             cols:4
             row_force_default:True
@@ -13,6 +20,39 @@
             row_force_default:True
             row_default_height:40
             id:file_pick_layout
+        GridLayout:
+            cols:3
+            row_force_default:True
+            row_default_height: 180
+            spacing:10,10
+            GridLayout:
+                rows:2
+                Label:
+                    text:''
+                    height:20
+                    id:image_preview_label
+                Image:
+                    source: app.img_prev_source
+                    size: app.img_prev_size
+                    id: image_preview
+            GridLayout:
+                rows:2
+                Label:
+                    text:'size to search:'
+                GridLayout:
+                    cols:2
+                    row_force_default:True
+                    row_default_height:40
+                    TextInput:
+                        text:'0'
+                        multiline:False
+                    Label:
+                        text:'μm'
+                        width:40
+            Button:
+                text:'Evaluate'
+                background_color: (1, 0.2, 1, 1)
+
 
 <LoadDialog>:
     BoxLayout:
