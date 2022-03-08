@@ -11,10 +11,36 @@
                 pos:self.pos
                 size:self.size
         GridLayout:
-            cols:4
+            cols:2
             row_force_default:True
             row_default_height:40
-            id:main_layout
+            BoxLayout:
+                orientation:'horizontal'
+                CheckBox:
+                    id:source_radio
+                    active:True
+                    group:'source'
+                    size_hint_x:None
+                    width:40
+                AlignLabel:
+                    text:'Local file'
+                    size_hint: 1.0, 1.0
+                    halign:'left'
+                    valign:'middle'
+            BoxLayout:
+                orientation:'horizontal'
+                CheckBox:
+                    id:gd_radio
+                    active:False
+                    group:'source'
+                    size_hint_x:None
+                    width:40
+                AlignLabel:
+                    text:'Google Drive link'
+                    size_hint: 1.0, 1.0
+                    halign:'left'
+                    valign:'middle'
+
         GridLayout:
             cols:3
             row_force_default:True
@@ -27,9 +53,11 @@
             spacing:10,10
             GridLayout:
                 rows:2
-                Label:
+                AlignLabel:
                     text:''
-                    height:20
+                    size_hint: 1.0, 1.0
+                    halign: 'center'
+                    valign: 'middle'
                     id:image_preview_label
                 Image:
                     source: app.img_prev_source

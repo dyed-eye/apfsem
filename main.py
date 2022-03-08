@@ -28,6 +28,11 @@ SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
 # also we assume that metadata has path %path%_metadata.xml
 
 
+class AlignLabel(Label):
+   def on_size(self, *args):
+      self.text_size = self.size
+
+
 class LoadDialog(GridLayout):
     load = ObjectProperty(None)
     cancel = ObjectProperty(None)
@@ -58,7 +63,7 @@ class Main(Screen):
                 self.messages.text = ''
 
         def confirm_path(instance):
-            if source_radio.active:
+            if self.ids.source_radio.active:
                 if os.path.isfile(self.text_input.text):
                     try:
                         img = Image.open(self.text_input.text)
@@ -66,7 +71,7 @@ class Main(Screen):
                                 or (img.format == 'PNG') or (img.format == 'TIF'):
                             img.save('res/cached_image.png')
                             self.ids.image_preview.source = 'res/cached_image.png'
-                            self.ids.image_preview.size = (img.width / img.height * self.height / 4, self.height / 4)
+                            self.ids.image_preview.size = (img.width / img.height * 160, 160)
                             self.ids.image_preview_label.text = 'Image preview:'
                             self.messages.text = ''
                         else:
@@ -79,7 +84,7 @@ class Main(Screen):
                     self.messages.text = '[color=ff1111]Error: no file specified[/color]'
                     print('Error: no file specified')
                     # TODO: do the errors more ... (?)
-            elif gd_radio.active:
+            elif self.ids.gd_radio.active:
                 ask_google(self.text_input.text)
 
         def load(path, filename):
@@ -100,17 +105,10 @@ class Main(Screen):
                                 size_hint=(0.9, 0.9))
             self.pop_up.open()
 
-        main_l = self.ids.main_layout
         fp_l = self.ids.file_pick_layout
 
-        source_radio = CheckBox(active=True, group='source')
-        main_l.add_widget(source_radio)
-        source_radio.bind(active=source_choose)
-        main_l.add_widget(Label(text='Local File'))
-        gd_radio = CheckBox(group='source')
-        main_l.add_widget(gd_radio)
-        gd_radio.bind(active=gd_choose)
-        main_l.add_widget(Label(text='Google Drive link'))
+        self.ids.source_radio.bind(active=source_choose)
+        self.ids.gd_radio.bind(active=gd_choose)
 
         self.text_input = TextInput(text=os.path.dirname(os.path.abspath(__file__)), multiline=False)
         fp_l.add_widget(self.text_input)
