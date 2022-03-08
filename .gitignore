@@ -1,5 +1,4 @@
 /oldkv.txt
 /.git/*
 /.idea/*
-/res/token.json
-/res/credentials.json
+/res/cached_image.png
