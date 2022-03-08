@@ -74,12 +74,27 @@
                     TextInput:
                         text:'0'
                         multiline:False
+                        id:grain_size_input
                     Label:
                         text:'μm'
                         width:40
             Button:
                 text:'Evaluate'
                 background_color: (1, 0.2, 1, 1)
+                id:big_purple_button
+
+<Evaluate>:
+    BoxLayout:
+        orientation:'vertical'
+        size: root.size
+        pos: root.pos
+        AlignLabel:
+            text:'[b][size=32]Processing...[/size][/b]'
+            size_hint: 1.0, 1.0
+            halign: 'center'
+            valign: 'middle'
+            markup: True
+            id:processing_text
 
 
 <LoadDialog>:
