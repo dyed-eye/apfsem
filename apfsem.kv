@@ -1,0 +1,117 @@
+
+<Main>:
+    BoxLayout:
+        padding:80
+        spacing:10
+        orientation:'vertical'
+        canvas:
+            Color:
+                rgb:0,0,0,1
+            Rectangle:
+                pos:self.pos
+                size:self.size
+        GridLayout:
+            cols:2
+            row_force_default:True
+            row_default_height:40
+            BoxLayout:
+                orientation:'horizontal'
+                CheckBox:
+                    id:source_radio
+                    active:True
+                    group:'source'
+                    size_hint_x:None
+                    width:40
+                AlignLabel:
+                    text:'Local file'
+                    size_hint: 1.0, 1.0
+                    halign:'left'
+                    valign:'middle'
+            BoxLayout:
+                orientation:'horizontal'
+                CheckBox:
+                    id:gd_radio
+                    active:False
+                    group:'source'
+                    size_hint_x:None
+                    width:40
+                AlignLabel:
+                    text:'Google Drive link'
+                    size_hint: 1.0, 1.0
+                    halign:'left'
+                    valign:'middle'
+
+        GridLayout:
+            cols:3
+            row_force_default:True
+            row_default_height:40
+            id:file_pick_layout
+        GridLayout:
+            cols:3
+            row_force_default:True
+            row_default_height: 180
+            spacing:10,10
+            GridLayout:
+                rows:2
+                AlignLabel:
+                    text:''
+                    size_hint: 1.0, 1.0
+                    halign: 'center'
+                    valign: 'middle'
+                    id:image_preview_label
+                Image:
+                    source: app.img_prev_source
+                    size: app.img_prev_size
+                    id: image_preview
+            GridLayout:
+                rows:2
+                Label:
+                    text:'size to search:'
+                GridLayout:
+                    cols:2
+                    row_force_default:True
+                    row_default_height:40
+                    TextInput:
+                        text:'0'
+                        multiline:False
+                        id:grain_size_input
+                    Label:
+                        text:'μm'
+                        width:40
+            Button:
+                text:'Evaluate'
+                background_color: (1, 0.2, 1, 1)
+                id:big_purple_button
+
+<Evaluate>:
+    BoxLayout:
+        orientation:'vertical'
+        size: root.size
+        pos: root.pos
+        AlignLabel:
+            text:'[b][size=32]Processing...[/size][/b]'
+            size_hint: 1.0, 1.0
+            halign: 'center'
+            valign: 'middle'
+            markup: True
+            id:processing_text
+
+
+<LoadDialog>:
+    BoxLayout:
+        size: root.size
+        pos: root.pos
+        orientation: "vertical"
+        FileChooserIconView:
+            id: filechooser
+            path: "."
+        BoxLayout:
+            size_hint_y: None
+            height: 30
+            Button:
+                id: test
+                text: "Cancel"
+                on_release: root.cancel()
+            Button:
+                text: "Select"
+                on_release: root.load(filechooser.path, filechooser.selection)
