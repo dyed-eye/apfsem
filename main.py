@@ -1,19 +1,17 @@
-import kivy
 from kivy.app import App
 from kivy.properties import ObjectProperty
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.button import Button
-from kivy.uix.widget import Widget
 from kivy.uix.label import Label
-from kivy.graphics import Rectangle, Color
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.checkbox import CheckBox
 from kivy.uix.popup import Popup
 from kivy.uix.textinput import TextInput
+from kivy.uix.image import Image as KivyImage
 
-from PIL import Image
+import cv2 as cv
 import os
-from time import monotonic
+import time
 import xml.etree.ElementTree as ET
 
 from google.auth.transport.requests import Request
@@ -47,7 +45,23 @@ class Main(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
+        def image_recognising(img):
+            cv.imwrite('res/cached_image.png', img)
+            self.ids.image_preview.source = 'res/cached_image.png'
+            self.ids.image_preview.reload()
+            self.ids.image_preview.size = (img.shape[1] / img.shape[0] * 160, 160)
+            self.ids.image_preview_label.text = 'Image preview:'
+            self.messages.text = '[color=22ff22]Success![/color]'
+            APfSEMApp.img_prev_source = 'res/cached_image.png'
+
         def ask_google(link):
+            '''try:
+                response = requests.get(link)
+                with Image.open(BytesIO(response.content)) as img:
+                    image_recognising(img)
+            except:
+                self.messages.text = '[color=ff1111]Error: no file specified[/color]'
+                print('Error: no image specified')'''
             ...
             # TODO: requests to google api (it would be cool)
 
@@ -68,22 +82,12 @@ class Main(Screen):
         def confirm_path(instance):
             if self.ids.source_radio.active:
                 if os.path.isfile(self.text_input.text):
-                    try:
-                        img = Image.open(self.text_input.text)
-                        if (img.format == 'JPEG') or (img.format == 'JPG') \
-                                or (img.format == 'PNG') or (img.format == 'TIF'):
-                            img.save('res/cached_image.png')
-                            self.ids.image_preview.source = 'res/cached_image.png'
-                            self.ids.image_preview.size = (img.width / img.height * 160, 160)
-                            self.ids.image_preview_label.text = 'Image preview:'
-                            self.messages.text = '[color=22ff22]Success![/color]'
-                            APfSEMApp.img_prev_source = 'res/cached_image.png'
-                        else:
-                            self.messages.text = '[color=ff1111]Error: image was not recognised[/color]'
-                            print('Error: image was not recognised')
-                    except:
+                    img = cv.imread(cv.samples.findFile(self.text_input.text))
+                    if img is None:
                         self.messages.text = '[color=ff1111]Error: no file specified[/color]'
                         print('Error: no image specified')
+                    else:
+                        image_recognising(img)
                 else:
                     self.messages.text = '[color=ff1111]Error: no file specified[/color]'
                     print('Error: no file specified')
@@ -123,8 +127,9 @@ class Main(Screen):
                     global grain_size
                     grain_size = float(self.ids.grain_size_input.text)
                     APfSEMApp.sm.current = 'process'
+                    Evaluate.evaluate(self)
                 else:
-                    self.messages.text = '[color=ff1111]Error: size below zero[/color]'
+                    self.messages.text = '[color=ff1111]Error: size has not been stated or below zero[/color]'
             else:
                 self.messages.text = '[color=ff1111]Error: choose an image[/color]'
 
@@ -144,17 +149,32 @@ class Main(Screen):
         self.ids.big_purple_button.on_press = big_purple_button_action
 
 
-def calculate(path, size):
-    ...
-    # TODO: get the grain sizes
-
-
 class Evaluate(Screen):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
+    def evaluate(self):
+
+        def calculate(path, size):
+                time.sleep(20)
+                print('calculated!')
+                ...
+                # TODO: get the grain sizes from picture
+
         calculate(img_path, grain_size)
+
+        APfSEMApp.sm.current = 'result'
+
+
+class Result(Screen):
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        layout = self.ids.result_screen_layout
+        self.pic = KivyImage(source='res/cached_image.png')
+        layout.add_widget(self.pic)
 
 
 class APfSEMApp(App):
@@ -165,6 +185,7 @@ class APfSEMApp(App):
     def build(self):
         self.sm.add_widget(Main(name='menu'))
         self.sm.add_widget(Evaluate(name='process'))
+        self.sm.add_widget(Result(name='result'))
         return self.sm
 
 
