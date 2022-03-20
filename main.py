@@ -4,25 +4,15 @@ from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.uix.gridlayout import GridLayout
-from kivy.uix.checkbox import CheckBox
 from kivy.uix.popup import Popup
 from kivy.uix.textinput import TextInput
 from kivy.uix.image import Image as KivyImage
 
 import cv2 as cv
 import os
-import time
-import xml.etree.ElementTree as ET
 
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
-from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
+import operation as op
 
-SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
-img_path = ''
-grain_size = 0
 
 # path example: "D:\emae\python\apfsem_examples\JACS_01.jpg"
 # path has to be copied with right mouse button -> copy as path
@@ -39,7 +29,6 @@ class LoadDialog(GridLayout):
     cancel = ObjectProperty(None)
 
 
-# Container class for the app's widgets
 class Main(Screen):
 
     def __init__(self, **kwargs):
@@ -55,13 +44,6 @@ class Main(Screen):
             APfSEMApp.img_prev_source = 'res/cached_image.png'
 
         def ask_google(link):
-            '''try:
-                response = requests.get(link)
-                with Image.open(BytesIO(response.content)) as img:
-                    image_recognising(img)
-            except:
-                self.messages.text = '[color=ff1111]Error: no file specified[/color]'
-                print('Error: no image specified')'''
             ...
             # TODO: requests to google api (it would be cool)
 
@@ -115,19 +97,15 @@ class Main(Screen):
 
         def big_purple_button_action():
             # TODO: think about other circumstances (!)
-            gr_s = 0
+            grain_size = 0
             try:
-                gr_s = float(self.ids.grain_size_input.text)
+                grain_size = float(self.ids.grain_size_input.text)
             except:
                 self.messages.text = '[color=ff1111]Error: incorrect number[/color]'
             if APfSEMApp.img_prev_source != 'res/blank.png':
-                if gr_s > 0:
-                    global img_path
-                    img_path = APfSEMApp.img_prev_source
-                    global grain_size
-                    grain_size = float(self.ids.grain_size_input.text)
+                if grain_size > 0:
+                    APfSEMApp.grain_size = grain_size
                     APfSEMApp.sm.current = 'process'
-                    Evaluate.evaluate(self)
                 else:
                     self.messages.text = '[color=ff1111]Error: size has not been stated or below zero[/color]'
             else:
@@ -154,16 +132,8 @@ class Evaluate(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def evaluate(self):
-
-        def calculate(path, size):
-                time.sleep(20)
-                print('calculated!')
-                ...
-                # TODO: get the grain sizes from picture
-
-        calculate(img_path, grain_size)
-
+    def on_enter(self, *args):
+        op.evaluate(APfSEMApp.grain_size)
         APfSEMApp.sm.current = 'result'
 
 
@@ -172,14 +142,18 @@ class Result(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        layout = self.ids.result_screen_layout
-        self.pic = KivyImage(source='res/cached_image.png')
-        layout.add_widget(self.pic)
+    def on_pre_enter(self, *args):
+        self.ids.image_with_contours.source = 'res/cached_image.png'
+
+    def on_enter(self, *args):
+        self.ids.image_with_contours.reload()
 
 
 class APfSEMApp(App):
     img_prev_source = 'res/blank.png'
     img_prev_size = (0, 0)
+    grain_size = 0
+
     sm = ScreenManager()
 
     def build(self):
