@@ -1,4 +1,5 @@
 import cv2 as cv
+import numpy as np
 
 
 def evaluate(grain_size):
@@ -22,7 +23,8 @@ def evaluate(grain_size):
     # cv.imwrite('res/cached_image.png', img)
 
 
-def manual(median_blur_size=0, gaus_thresh=False, pixel_block=0, sens=0, contrast=False, clip_limit=0, tile_grid_size=0):
+def manual(median_blur_size=0, gaus_thresh=False, pixel_block=0, sens=0, contrast=False, clip_limit=0, tile_grid_size=0,
+           line_thickness=10):
     img = cv.imread('res/cached_image.png')
     if median_blur_size > 0:
         img = cv.medianBlur(img, median_blur_size)
@@ -40,8 +42,16 @@ def manual(median_blur_size=0, gaus_thresh=False, pixel_block=0, sens=0, contras
         th = cv.adaptiveThreshold(img_gray, 255, cv.ADAPTIVE_THRESH_MEAN_C, cv.THRESH_BINARY, pixel_block, sens)
     ret, th = cv.threshold(th, 0, 255, cv.THRESH_BINARY+cv.THRESH_OTSU)
     contours, hierarchy = cv.findContours(th, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE)
-    cv.drawContours(img, contours, -1, (20, 20, 255), 10, cv.LINE_AA, hierarchy, 1)
+    cv.drawContours(img, contours, -1, (20, 20, 255), line_thickness, cv.LINE_AA, hierarchy, 1)
     img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
-    cv.imwrite('res/cached_cached_image.png', img)
+
+    rows_rgb, cols_rgb, channels = img.shape
+    rows_gray, cols_gray = img_gray.shape
+    cols_comb = max(cols_rgb, cols_gray)
+    rows_comb = rows_rgb + rows_gray
+    comb = np.zeros(shape=(rows_comb, cols_comb, channels), dtype=np.uint8)
+    comb[:rows_rgb, :cols_rgb] = img
+    comb[rows_rgb:, :cols_gray] = img_gray[:, :, None]
+    cv.imwrite('res/cached_cached_image.png', comb)
 
     return str(len(contours))

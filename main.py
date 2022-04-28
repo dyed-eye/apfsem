@@ -159,8 +159,10 @@ class Manual(Screen):
         def apply_action():
             count = op.manual(self.ids.blur_slider.value, self.gaus_thresh, self.ids.pixelblock_slider.value,
                               self.ids.c_slider.value, self.ids.contrast_check.active, self.ids.cliplimit_slider.value,
-                              self.ids.gridsize_slider.value)
+                              self.ids.gridsize_slider.value, self.ids.thick_slider.value)
             self.ids.description.text = str(count) + ' contours'
+            img = cv.imread('res/cached_cached_image.png')
+            self.ids.image_editing.size = (img.shape[1] / img.shape[0] * 300, 300)
             self.ids.image_editing.reload()
 
         def blur_listener(instance, value):
@@ -177,6 +179,9 @@ class Manual(Screen):
 
         def c_listener(instance, value):
             self.ids.c_title.text = 'C: ' + str(round(value, 2))
+
+        def th_listener(instance, value):
+            self.ids.thick_title.text = 'Thickness of line: ' + str(round(value, 0))
 
         def mean(checkbox, value):
             if value:
@@ -203,6 +208,7 @@ class Manual(Screen):
         self.ids.gaus_radio.bind(active=gaus)
         self.ids.contrast_check.bind(active=contrast)
         self.ids.apply_button.pos_hint = {'center_y': 0.5}
+        self.ids.thick_slider.bind(value=th_listener)
 
     def on_pre_enter(self, *args):
         img = cv.imread('res/cached_image.png')
@@ -211,7 +217,7 @@ class Manual(Screen):
 
     def on_enter(self, *args):
         img = cv.imread('res/cached_cached_image.png')
-        self.ids.image_editing.size = (img.shape[1] / img.shape[0] * 500, 500)
+        self.ids.image_editing.size = (img.shape[1] / img.shape[0] * 300, 300)
         self.ids.image_editing.reload()
 
 
@@ -223,8 +229,8 @@ class APfSEMApp(App):
     sm = ScreenManager()
 
     def build(self):
-        # self.sm.add_widget(Main(name='menu'))
-        # self.sm.add_widget(Evaluate(name='process'))
+        self.sm.add_widget(Main(name='menu'))
+        self.sm.add_widget(Evaluate(name='process'))
         # self.sm.add_widget(Result(name='result'))
         self.sm.add_widget(Manual(name='manual'))
         return self.sm
