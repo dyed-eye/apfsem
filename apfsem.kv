@@ -111,12 +111,39 @@
         GridLayout:
             cols:2
             col_force_default:True
-            col_default_width:350
+            col_default_width:400
             BoxLayout:
                 orientation: 'vertical'
                 size_hint_x:None
-                width:300
+                width:350
                 spacing: 10
+                BoxLayout:
+                    orientation: 'vertical'
+                    AlignLabel:
+                        text:'Thickness of line: 10'
+                        size_hint: 1.0, 1.0
+                        halign:'center'
+                        valign:'middle'
+                        id:thick_title
+                    Slider:
+                        id: thick_slider
+                        min: 1
+                        max: 15
+                        step: 1
+                        value: 10
+                        orientation: 'horizontal'
+                    GridLayout:
+                        cols:2
+                        AlignLabel:
+                            text:str(thick_slider.min)
+                            size_hint: 1.0, 1.0
+                            halign:'left'
+                            valign:'middle'
+                        AlignLabel:
+                            text:str(thick_slider.max)
+                            size_hint: 1.0, 1.0
+                            halign:'right'
+                            valign:'middle'
                 BoxLayout:
                     orientation: 'vertical'
                     AlignLabel:
@@ -128,7 +155,7 @@
                     Slider:
                         id: blur_slider
                         min: -1
-                        max: 9
+                        max: 21
                         step: 2
                         value: -1
                         orientation: 'horizontal'
@@ -168,8 +195,8 @@
                         id:cliplimit_title
                     Slider:
                         id: cliplimit_slider
-                        min: -10
-                        max: 20
+                        min: -15
+                        max: 30
                         step: 1
                         value:0
                         orientation: 'horizontal'
@@ -194,7 +221,7 @@
                     Slider:
                         id: gridsize_slider
                         min: 3
-                        max: 21
+                        max: 45
                         step: 2
                         value:3
                         orientation: 'horizontal'
@@ -250,8 +277,8 @@
                         id:c_title
                     Slider:
                         id: c_slider
-                        min: -10
-                        max: 20
+                        min: -15
+                        max: 30
                         step: 1
                         value: 0
                         orientation: 'horizontal'
@@ -276,7 +303,7 @@
                     Slider:
                         id: pixelblock_slider
                         min: 3
-                        max: 21
+                        max: 45
                         step: 2
                         value:3
                         orientation: 'horizontal'
@@ -293,10 +320,9 @@
                             halign:'right'
                             valign:'middle'
             GridLayout:
-                rows:4
+                rows:5
                 Label:
-                    size_hint_y:None
-                    height:60
+
                 GridLayout:
                     cols:3
                     Label:
@@ -311,12 +337,14 @@
                         height:60
                     Label:
 
+                Label:
+
                 Image:
                     source: app.img_prev_source
                     size: app.img_prev_size
                     id: image_editing
                     size_hint_y:None
-                    height:180
+                    height:360
                 AlignLabel:
                     id:description
                     size_hint: 1.0, 1.0
