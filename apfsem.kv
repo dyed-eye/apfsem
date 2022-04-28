@@ -40,7 +40,6 @@
                     size_hint: 1.0, 1.0
                     halign:'left'
                     valign:'middle'
-
         GridLayout:
             cols:3
             row_force_default:True
@@ -50,7 +49,6 @@
             cols:3
             row_force_default:True
             row_default_height: 180
-            spacing:10,10
             GridLayout:
                 rows:2
                 AlignLabel:
@@ -96,6 +94,234 @@
             markup: True
             id:processing_text
 
+<Result>:
+    GridLayout:
+        cols:1
+        id:result_screen_layout
+        Image:
+            source: app.img_prev_source
+            id: image_with_contours
+
+<Manual>:
+    BoxLayout:
+        orientation: 'vertical'
+        padding:20
+        spacing:10
+        id:manual_screen_layout
+        GridLayout:
+            cols:2
+            col_force_default:True
+            col_default_width:350
+            BoxLayout:
+                orientation: 'vertical'
+                size_hint_x:None
+                width:300
+                spacing: 10
+                BoxLayout:
+                    orientation: 'vertical'
+                    AlignLabel:
+                        text:'Blur (-1 to disable): -1'
+                        size_hint: 1.0, 1.0
+                        halign:'center'
+                        valign:'middle'
+                        id:blur_title
+                    Slider:
+                        id: blur_slider
+                        min: -1
+                        max: 9
+                        step: 2
+                        value: -1
+                        orientation: 'horizontal'
+                    GridLayout:
+                        cols:2
+                        AlignLabel:
+                            text:str(blur_slider.min)
+                            size_hint: 1.0, 1.0
+                            halign:'left'
+                            valign:'middle'
+                        AlignLabel:
+                            text:str(blur_slider.max)
+                            size_hint: 1.0, 1.0
+                            halign:'right'
+                            valign:'middle'
+                GridLayout:
+                    cols:2
+                    size_hint_y:None
+                    height:20
+                    AlignLabel:
+                        text:'Contrast:'
+                        size_hint: 1.0, 1.0
+                        halign:'right'
+                        valign:'middle'
+                    CheckBox:
+                        id:contrast_check
+                        active:True
+                BoxLayout:
+                    orientation: 'vertical'
+                    id:contrast_layout
+                    disabled:False
+                    AlignLabel:
+                        text:'Clip Limit: 0'
+                        size_hint: 1.0, 1.0
+                        halign:'center'
+                        valign:'middle'
+                        id:cliplimit_title
+                    Slider:
+                        id: cliplimit_slider
+                        min: -10
+                        max: 20
+                        step: 1
+                        value:0
+                        orientation: 'horizontal'
+                    GridLayout:
+                        cols:2
+                        AlignLabel:
+                            text:str(cliplimit_slider.min)
+                            size_hint: 1.0, 1.0
+                            halign:'left'
+                            valign:'middle'
+                        AlignLabel:
+                            text:str(cliplimit_slider.max)
+                            size_hint: 1.0, 1.0
+                            halign:'right'
+                            valign:'middle'
+                    AlignLabel:
+                        text:'Grid Size: 3'
+                        size_hint: 1.0, 1.0
+                        halign:'center'
+                        valign:'middle'
+                        id:gridsize_title
+                    Slider:
+                        id: gridsize_slider
+                        min: 3
+                        max: 21
+                        step: 2
+                        value:3
+                        orientation: 'horizontal'
+                    GridLayout:
+                        cols:2
+                        AlignLabel:
+                            text:str(gridsize_slider.min)
+                            size_hint: 1.0, 1.0
+                            halign:'left'
+                            valign:'middle'
+                        AlignLabel:
+                            text:str(gridsize_slider.max)
+                            size_hint: 1.0, 1.0
+                            halign:'right'
+                            valign:'middle'
+                BoxLayout:
+                    size_hint_y:None
+                    height:20
+                    orientation:'horizontal'
+                    CheckBox:
+                        id:mean_radio
+                        active:True
+                        group:'thresh'
+                        size_hint_x:None
+                        width:40
+                    AlignLabel:
+                        text:'Mean Thresholding'
+                        size_hint: 1.0, 1.0
+                        halign:'left'
+                        valign:'middle'
+                BoxLayout:
+                    size_hint_y:None
+                    height:20
+                    orientation:'horizontal'
+                    CheckBox:
+                        id:gaus_radio
+                        active:False
+                        group:'thresh'
+                        size_hint_x:None
+                        width:40
+                    AlignLabel:
+                        text:'Gaussian Thresholding'
+                        size_hint: 1.0, 1.0
+                        halign:'left'
+                        valign:'middle'
+                BoxLayout:
+                    orientation: 'vertical'
+                    AlignLabel:
+                        text:'C: 0'
+                        size_hint: 1.0, 1.0
+                        halign:'center'
+                        valign:'middle'
+                        id:c_title
+                    Slider:
+                        id: c_slider
+                        min: -10
+                        max: 20
+                        step: 1
+                        value: 0
+                        orientation: 'horizontal'
+                    GridLayout:
+                        cols:2
+                        AlignLabel:
+                            text:str(c_slider.min)
+                            size_hint: 1.0, 1.0
+                            halign:'left'
+                            valign:'middle'
+                        AlignLabel:
+                            text:str(c_slider.max)
+                            size_hint: 1.0, 1.0
+                            halign:'right'
+                            valign:'middle'
+                    AlignLabel:
+                        text:'Pixel Block: 3'
+                        size_hint: 1.0, 1.0
+                        halign:'center'
+                        valign:'middle'
+                        id:pixelblock_title
+                    Slider:
+                        id: pixelblock_slider
+                        min: 3
+                        max: 21
+                        step: 2
+                        value:3
+                        orientation: 'horizontal'
+                    GridLayout:
+                        cols:2
+                        AlignLabel:
+                            text:str(pixelblock_slider.min)
+                            size_hint: 1.0, 1.0
+                            halign:'left'
+                            valign:'middle'
+                        AlignLabel:
+                            text:str(pixelblock_slider.max)
+                            size_hint: 1.0, 1.0
+                            halign:'right'
+                            valign:'middle'
+            GridLayout:
+                rows:4
+                Label:
+                    size_hint_y:None
+                    height:60
+                GridLayout:
+                    cols:3
+                    Label:
+
+                    Button:
+                        text:'Apply'
+                        background_color: (0, 0, 1, 1)
+                        id:apply_button
+                        size_hint_x:None
+                        width:100
+                        size_hint_y:None
+                        height:60
+                    Label:
+
+                Image:
+                    source: app.img_prev_source
+                    size: app.img_prev_size
+                    id: image_editing
+                    size_hint_y:None
+                    height:180
+                AlignLabel:
+                    id:description
+                    size_hint: 1.0, 1.0
+                    halign:'center'
+                    valign:'middle'
 
 <LoadDialog>:
     BoxLayout:
