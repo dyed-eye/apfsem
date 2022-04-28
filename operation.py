@@ -19,4 +19,29 @@ def evaluate(grain_size):
     # -1 is below zero so all the contours will be drawn
     # color is BGR tuple
 
-    cv.imwrite('res/cached_image.png', img)
+    # cv.imwrite('res/cached_image.png', img)
+
+
+def manual(median_blur_size=0, gaus_thresh=False, pixel_block=0, sens=0, contrast=False, clip_limit=0, tile_grid_size=0):
+    img = cv.imread('res/cached_image.png')
+    if median_blur_size > 0:
+        img = cv.medianBlur(img, median_blur_size)
+    if contrast:
+        clahe = cv.createCLAHE(clipLimit=clip_limit, tileGridSize=(tile_grid_size, tile_grid_size))
+        lab = cv.cvtColor(img, cv.COLOR_BGR2LAB)  # convert from BGR to LAB color space
+        l, a, b = cv.split(lab)  # split on 3 different channels
+        l2 = clahe.apply(l)  # apply CLAHE to the L-channel
+        lab = cv.merge((l2, a, b))  # merge channels
+        img = cv.cvtColor(lab, cv.COLOR_LAB2BGR)  # convert from LAB to BGR
+    img_gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+    if gaus_thresh:
+        th = cv.adaptiveThreshold(img_gray, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, pixel_block, sens)
+    else:
+        th = cv.adaptiveThreshold(img_gray, 255, cv.ADAPTIVE_THRESH_MEAN_C, cv.THRESH_BINARY, pixel_block, sens)
+    ret, th = cv.threshold(th, 0, 255, cv.THRESH_BINARY+cv.THRESH_OTSU)
+    contours, hierarchy = cv.findContours(th, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE)
+    cv.drawContours(img, contours, -1, (20, 20, 255), 10, cv.LINE_AA, hierarchy, 1)
+    img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
+    cv.imwrite('res/cached_cached_image.png', img)
+
+    return str(len(contours))

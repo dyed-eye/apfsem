@@ -133,8 +133,10 @@ class Evaluate(Screen):
         super().__init__(**kwargs)
 
     def on_enter(self, *args):
-        op.evaluate(APfSEMApp.grain_size)
-        APfSEMApp.sm.current = 'result'
+        # op.evaluate(APfSEMApp.grain_size)
+        # op.manual()
+        # APfSEMApp.sm.current = 'result'
+        APfSEMApp.sm.current = 'manual'
 
 
 class Result(Screen):
@@ -149,6 +151,70 @@ class Result(Screen):
         self.ids.image_with_contours.reload()
 
 
+class Manual(Screen):
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        def apply_action():
+            count = op.manual(self.ids.blur_slider.value, self.gaus_thresh, self.ids.pixelblock_slider.value,
+                              self.ids.c_slider.value, self.ids.contrast_check.active, self.ids.cliplimit_slider.value,
+                              self.ids.gridsize_slider.value)
+            self.ids.description.text = str(count) + ' contours'
+            self.ids.image_editing.reload()
+
+        def blur_listener(instance, value):
+            self.ids.blur_title.text = 'Blur (-1 to disable): ' + str(round(value, 2))
+
+        def clip_listener(instance, value):
+            self.ids.cliplimit_title.text = 'Clip Limit: ' + str(round(value, 2))
+
+        def grid_listener(instance, value):
+            self.ids.gridsize_title.text = 'Grid Size: ' + str(round(value, 2))
+
+        def pixel_listener(instance, value):
+            self.ids.pixelblock_title.text = 'Pixel Block: ' + str(round(value, 2))
+
+        def c_listener(instance, value):
+            self.ids.c_title.text = 'C: ' + str(round(value, 2))
+
+        def mean(checkbox, value):
+            if value:
+                self.gaus_thresh = False
+
+        def gaus(checkbox, value):
+            if value:
+                self.gaus_thresh = True
+
+        def contrast(checkbox, value):
+            if value:
+                self.ids.contrast_layout.disabled = False
+            else:
+                self.ids.contrast_layout.disabled = True
+
+        self.gaus_thresh = False
+        self.ids.apply_button.on_press = apply_action
+        self.ids.blur_slider.bind(value=blur_listener)
+        self.ids.cliplimit_slider.bind(value=clip_listener)
+        self.ids.gridsize_slider.bind(value=grid_listener)
+        self.ids.pixelblock_slider.bind(value=pixel_listener)
+        self.ids.c_slider.bind(value=c_listener)
+        self.ids.mean_radio.bind(active=mean)
+        self.ids.gaus_radio.bind(active=gaus)
+        self.ids.contrast_check.bind(active=contrast)
+        self.ids.apply_button.pos_hint = {'center_y': 0.5}
+
+    def on_pre_enter(self, *args):
+        img = cv.imread('res/cached_image.png')
+        cv.imwrite('res/cached_cached_image.png', img)
+        self.ids.image_editing.source = 'res/cached_cached_image.png'
+
+    def on_enter(self, *args):
+        img = cv.imread('res/cached_cached_image.png')
+        self.ids.image_editing.size = (img.shape[1] / img.shape[0] * 500, 500)
+        self.ids.image_editing.reload()
+
+
 class APfSEMApp(App):
     img_prev_source = 'res/blank.png'
     img_prev_size = (0, 0)
@@ -157,9 +223,10 @@ class APfSEMApp(App):
     sm = ScreenManager()
 
     def build(self):
-        self.sm.add_widget(Main(name='menu'))
-        self.sm.add_widget(Evaluate(name='process'))
-        self.sm.add_widget(Result(name='result'))
+        # self.sm.add_widget(Main(name='menu'))
+        # self.sm.add_widget(Evaluate(name='process'))
+        # self.sm.add_widget(Result(name='result'))
+        self.sm.add_widget(Manual(name='manual'))
         return self.sm
 
 
