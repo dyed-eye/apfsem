@@ -1,57 +1,36 @@
 import cv2 as cv
 import numpy as np
+from matplotlib import pyplot as plt
 
 
-def evaluate(grain_size):
+def limits(img, accuracy):
+    img_temp = img.copy()
 
-    def algorithm(img):
-        gray_img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-        thr_img = cv.adaptiveThreshold(gray_img, 255, cv.ADAPTIVE_THRESH_MEAN_C, cv.THRESH_BINARY, 19, 2)
-        ret, thr_img = cv.threshold(thr_img, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU)
-        contours, hierarchy = cv.findContours(thr_img, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE)
-        return contours, hierarchy
+    pixels = np.array(img_temp.reshape(-1, 3))
+    '''v, vc = np.unique(pixels[:, 2], axis=0, return_counts=True)
+    s, sc = np.unique(pixels[:, 1], axis=0, return_counts=True)'''
+    h, hc = np.unique(pixels[:, 0], axis=0, return_counts=True)
 
+    new_h = []
+    amount = accuracy/100 * len(pixels)
+    for i in range(len(h)):
+        if hc[i] > amount:
+            new_h.append(h[i])
+
+    '''plt.plot(v, vc, 'r', label='Value', linewidth=1)
+    plt.plot(s, sc, 'g', label='Saturation', linewidth=1)
+    plt.plot(h, hc, 'b', label='Hue', linewidth=1)
+    plt.legend()
+    plt.savefig('res/cached_cached_image')'''
+
+    return int(min(new_h)), int(max(new_h))
+
+def automised(grain_size, accuracy):
     img = cv.imread('res/cached_image.png')
+    img_hsv = cv.cvtColor(img, cv.COLOR_BGR2HSV)
+    min_h, max_h = limits(img_hsv, accuracy)
+    thresh = cv.inRange(img_hsv, (min_h, 0, 0), (max_h, 1e3, 1e3))
 
-    contours, hierarchy = algorithm(img)
-    print('I found ' + str(len(contours)) + ' contours')
+    cv.imwrite('res/cached_cached_image.png', thresh)
 
-    cv.drawContours(img, contours, -1, (50, 50, 255), 2, cv.LINE_AA, hierarchy, 1)
-    # -1 is below zero so all the contours will be drawn
-    # color is BGR tuple
-
-    # cv.imwrite('res/cached_image.png', img)
-
-
-def manual(median_blur_size=0, gaus_thresh=False, pixel_block=0, sens=0, contrast=False, clip_limit=0, tile_grid_size=0,
-           line_thickness=10):
-    img = cv.imread('res/cached_image.png')
-    if median_blur_size > 0:
-        img = cv.medianBlur(img, median_blur_size)
-    if contrast:
-        clahe = cv.createCLAHE(clipLimit=clip_limit, tileGridSize=(tile_grid_size, tile_grid_size))
-        lab = cv.cvtColor(img, cv.COLOR_BGR2LAB)  # convert from BGR to LAB color space
-        l, a, b = cv.split(lab)  # split on 3 different channels
-        l2 = clahe.apply(l)  # apply CLAHE to the L-channel
-        lab = cv.merge((l2, a, b))  # merge channels
-        img = cv.cvtColor(lab, cv.COLOR_LAB2BGR)  # convert from LAB to BGR
-    img_gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-    if gaus_thresh:
-        th = cv.adaptiveThreshold(img_gray, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, pixel_block, sens)
-    else:
-        th = cv.adaptiveThreshold(img_gray, 255, cv.ADAPTIVE_THRESH_MEAN_C, cv.THRESH_BINARY, pixel_block, sens)
-    ret, th = cv.threshold(th, 0, 255, cv.THRESH_BINARY+cv.THRESH_OTSU)
-    contours, hierarchy = cv.findContours(th, cv.RETR_CCOMP, cv.CHAIN_APPROX_SIMPLE)
-    cv.drawContours(img, contours, -1, (20, 20, 255), line_thickness, cv.LINE_AA, hierarchy, 1)
-    img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
-
-    rows_rgb, cols_rgb, channels = img.shape
-    rows_gray, cols_gray = img_gray.shape
-    cols_comb = max(cols_rgb, cols_gray)
-    rows_comb = rows_rgb + rows_gray
-    comb = np.zeros(shape=(rows_comb, cols_comb, channels), dtype=np.uint8)
-    comb[:rows_rgb, :cols_rgb] = img
-    comb[rows_rgb:, :cols_gray] = img_gray[:, :, None]
-    cv.imwrite('res/cached_cached_image.png', comb)
-
-    return str(len(contours))
+    return grain_size

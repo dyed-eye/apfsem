@@ -6,10 +6,11 @@ from kivy.uix.label import Label
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.popup import Popup
 from kivy.uix.textinput import TextInput
-from kivy.uix.image import Image as KivyImage
+from kivy.clock import Clock
 
 import cv2 as cv
 import os
+import threading
 
 import operation as op
 
@@ -133,10 +134,18 @@ class Evaluate(Screen):
         super().__init__(**kwargs)
 
     def on_enter(self, *args):
-        # op.evaluate(APfSEMApp.grain_size)
-        # op.manual()
-        # APfSEMApp.sm.current = 'result'
-        APfSEMApp.sm.current = 'manual'
+        def start_operation():
+            threading.Thread(target=operation).start()
+
+        def operation():
+            self.output = op.automised(APfSEMApp.grain_size, 7)
+            Clock.schedule_once(finish_operation)
+            #TODO: think about possibility of changing the accuracy
+
+        def finish_operation(args):
+            APfSEMApp.sm.current = 'result'
+
+        start_operation()
 
 
 class Result(Screen):
@@ -145,7 +154,7 @@ class Result(Screen):
         super().__init__(**kwargs)
 
     def on_pre_enter(self, *args):
-        self.ids.image_with_contours.source = 'res/cached_image.png'
+        self.ids.image_with_contours.source = 'res/cached_cached_image.png'
 
     def on_enter(self, *args):
         self.ids.image_with_contours.reload()
@@ -157,10 +166,17 @@ class Manual(Screen):
         super().__init__(**kwargs)
 
         def apply_action():
-            count = op.manual(self.ids.blur_slider.value, self.gaus_thresh, self.ids.pixelblock_slider.value,
+            self.ids.description.text = "Calculating... Please wait"
+            threading.Thread(target=operation).start()
+
+        def operation():
+            self.count = op.manual(self.ids.blur_slider.value, self.gaus_thresh, self.ids.pixelblock_slider.value,
                               self.ids.c_slider.value, self.ids.contrast_check.active, self.ids.cliplimit_slider.value,
                               self.ids.gridsize_slider.value, self.ids.thick_slider.value)
-            self.ids.description.text = str(count) + ' contours'
+            Clock.schedule_once(finish_operation)
+
+        def finish_operation(args):
+            self.ids.description.text = str(self.count) + ' contours'
             img = cv.imread('res/cached_cached_image.png')
             self.ids.image_editing.size = (img.shape[1] / img.shape[0] * 300, 300)
             self.ids.image_editing.reload()
@@ -231,7 +247,7 @@ class APfSEMApp(App):
     def build(self):
         self.sm.add_widget(Main(name='menu'))
         self.sm.add_widget(Evaluate(name='process'))
-        # self.sm.add_widget(Result(name='result'))
+        self.sm.add_widget(Result(name='result'))
         self.sm.add_widget(Manual(name='manual'))
         return self.sm
 
