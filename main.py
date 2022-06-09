@@ -11,10 +11,13 @@ from kivy.clock import Clock
 import cv2 as cv
 import os
 import threading
+import xml.etree.ElementTree as ET
 
 import operation as op
 
-
+scale = 0
+grain_size = 0
+norm = True
 # path example: "D:\emae\python\apfsem_examples\JACS_01.jpg"
 # path has to be copied with right mouse button -> copy as path
 # also we assume that metadata has path %path%_metadata.xml
@@ -64,13 +67,30 @@ class Main(Screen):
 
         def confirm_path(instance):
             if self.ids.source_radio.active:
-                if os.path.isfile(self.text_input.text):
+                if os.path.isfile(self.text_input.text) and os.path.isfile(f'{self.text_input.text}_metadata.xml'):
                     img = cv.imread(cv.samples.findFile(self.text_input.text))
                     if img is None:
                         self.messages.text = '[color=ff1111]Error: no file specified[/color]'
                         print('Error: no image specified')
                     else:
                         image_recognising(img)
+                        try:
+                            tree = ET.parse(f'{self.text_input.text}_metadata.xml')
+                            root = tree.getroot()
+                            for scalebar in root.iter('ScaleBar'):
+                                for textelem in scalebar.iter('TextElement'):
+                                    for text in textelem.iter('Text'):
+                                        data = []
+                                        data.append(text.text)
+                            for geom in scalebar.iter('Geometry'):
+                                for x1 in geom.iter('X1'):
+                                    data.append(float(x1.text))
+                                for x2 in geom.iter('X2'):
+                                    data.append(float(x2.text))
+                            global scale
+                            scale = (data[0][:-3]) / (data[2] - data[1])
+                        except Exception as e:
+                            print(e)
                 else:
                     self.messages.text = '[color=ff1111]Error: no file specified[/color]'
                     print('Error: no file specified')
@@ -98,14 +118,15 @@ class Main(Screen):
 
         def big_purple_button_action():
             # TODO: think about other circumstances (!)
-            grain_size = 0
+            gs = 0
             try:
-                grain_size = float(self.ids.grain_size_input.text)
+                gs = float(self.ids.grain_size_input.text)
             except:
                 self.messages.text = '[color=ff1111]Error: incorrect number[/color]'
             if APfSEMApp.img_prev_source != 'res/blank.png':
-                if grain_size > 0:
-                    APfSEMApp.grain_size = grain_size
+                if gs > 0:
+                    global grain_size
+                    grain_size = gs
                     APfSEMApp.sm.current = 'process'
                 else:
                     self.messages.text = '[color=ff1111]Error: size has not been stated or below zero[/color]'
@@ -134,13 +155,20 @@ class Evaluate(Screen):
         super().__init__(**kwargs)
 
     def on_enter(self, *args):
+        def get_params():
+            global grain_size, scale
+            return grain_size, scale
+
         def start_operation():
             threading.Thread(target=operation).start()
 
         def operation():
-            self.output = op.automised(APfSEMApp.grain_size, 7)
+            grain_size, scale = get_params()
+            global norm
+            norm = op.automised(grain_size, scale, 30)
+            # third argument stands for percentage of pixels in color to be not cutted off
             Clock.schedule_once(finish_operation)
-            #TODO: think about possibility of changing the accuracy
+            # TODO: think about possibility of changing the accuracy in gui
 
         def finish_operation(args):
             APfSEMApp.sm.current = 'result'
@@ -158,6 +186,8 @@ class Result(Screen):
 
     def on_enter(self, *args):
         self.ids.image_with_contours.reload()
+        if APfSEMApp.norm:
+            self.ids.norm_text = 'Распределение имеет нормальный характер'
 
 
 class Manual(Screen):
@@ -241,6 +271,8 @@ class APfSEMApp(App):
     img_prev_source = 'res/blank.png'
     img_prev_size = (0, 0)
     grain_size = 0
+    ratio = 0
+    norm = True
 
     sm = ScreenManager()
 

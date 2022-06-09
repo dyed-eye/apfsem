@@ -1,4 +1,6 @@
-/oldkv.txt
 /.git/*
 /.idea/*
+/__pycache__/*
 /res/cached_image.png
+/res/cached_cached_image.png
+/old_operation.py
