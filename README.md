@@ -1,6 +1,13 @@
 # The Analysing Programme for Scanning Electron Microscopes
-@@ 👀project of group 13 (Faculty of Physics, ITMO University, Saint Petersburg) @@
+@@ 👀 This app is a main product of the project realised by the students of the [Faculty of Physics](https://physics.itmo.ru/en) (ITMO University, Saint Petersburg):
+[Kliment Semushev](https://github.com/dyed-eye) and [Mikhail Shulga](https://github.com/SHULGA-Mikhail) @@
 
-+ creation stage: app that provides manual change of different parameters required to get the contours on the picture proposed; some analysys functions 
----
-[more information](https://www.overleaf.com/read/dcnvqndnfhnv)
+The app is designed to propose an analysis of different objects from a picture and find those with a required size.
+
+At the moment our project is at the active stage of creation. We already realised:
++ Graphical User Interface for better experience
++ different algorithms for object recognising using the [OpenCV](https://opencv.org/) library for python
++ objects' size calculation is still being developed
++ the data analysis is generally composed
+
+We are looking forward to any tips and suggestions related to the topic. You can contact with [Kliment Semushev](https://t.me/dyedeye) for any questions
